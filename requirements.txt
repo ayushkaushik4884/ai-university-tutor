@@ -4,4 +4,4 @@ pydantic
 langchain
 langchain-google-genai
 langchain-pinecone
-pinecone-client
+pinecone
