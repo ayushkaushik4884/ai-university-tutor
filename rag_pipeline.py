@@ -15,6 +15,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
 
+from operator import itemgetter
+
 load_dotenv()
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -47,7 +49,7 @@ retriever = vector_store.as_retriever(
 
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-1.5-flash-latest",
+    model="gemini-3.8-flash",
     temperature=0.3
 )
 
@@ -58,6 +60,10 @@ prompt = ChatPromptTemplate.from_messages([
         """You are a helpful university tutor.
 
 Answer the question using ONLY the context provided below.
+
+CRITICAL RULE: The user cannot see images, diagrams, or figures. 
+- Do NOT reference "Fig", "Figure", or "circuit shown below" in your final answer.
+- If a practice question relies entirely on a visual diagram to be solved, politely explain that the solution requires a diagram which is currently unavailable.
 
 If the answer is not present in the context, say that the information
 is not available in the provided study material.
@@ -84,7 +90,7 @@ def format_docs(docs):
 
 rag_chain = (
     RunnablePassthrough.assign(
-        context=retriever | format_docs
+        context=itemgetter("question") |retriever | format_docs
     )
     | prompt
     | llm
