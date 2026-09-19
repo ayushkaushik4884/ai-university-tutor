@@ -1,4 +1,7 @@
 .venv/
+university_data/
 __pycache__/
 *.pyc
-.env
+.envg
+*.pdf
+*.pptx
