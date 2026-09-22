@@ -2,6 +2,6 @@
 university_data/
 __pycache__/
 *.pyc
-.envg
+.env
 *.pdf
 *.pptx
