@@ -6,3 +6,8 @@ langchain-google-genai
 langchain-pinecone
 pinecone
 streamlit
+python-dotenv
+pypdf
+unstructured
+python-pptx
+requests

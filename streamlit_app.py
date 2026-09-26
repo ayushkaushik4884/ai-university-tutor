@@ -8,27 +8,21 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-if "page" not in st.session_state:
-    st.session_state.page = "chat"
-
+# 1. UPDATED DATA STRUCTURE: Store subject AND messages per thread
 if "threads" not in st.session_state:
     st.session_state.threads = {
-        "Chat 1": [{"role": "assistant", "content": "Hi! Ask me anything about your university subjects."}]
+        "Chat 1": {
+            "subject": "PHYSICS 1", 
+            "messages": [{"role": "assistant", "content": "Hi! Select a subject above and ask me anything."}]
+        }
     }
 
 if "current_thread" not in st.session_state:
     st.session_state.current_thread = "Chat 1"
 
-st.session_state.messages = st.session_state.threads[st.session_state.current_thread]
-
-
-def handle_subject_change():
-    new_subj = st.session_state.main_subject_selector
-    new_thread_id = f"Chat {len(st.session_state.threads) + 1}"
-    st.session_state.threads[new_thread_id] = [
-        {"role": "assistant", "content": f"New chat started for {new_subj}. Ask me anything!"}
-    ]
-    st.session_state.current_thread = new_thread_id
+# Create a convenient reference to the currently active thread
+current_chat = st.session_state.threads[st.session_state.current_thread]
+st.session_state.messages = current_chat["messages"]
 
 
 st.markdown(
@@ -160,96 +154,6 @@ st.markdown(
         margin-bottom: 42px;
     }
 
-    .welcome-card {
-        background: #11141A;
-        border: 1px solid #292D35;
-        border-radius: 20px;
-        padding: 32px 35px;
-        margin-bottom: 25px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .welcome-card::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 3px;
-        height: 100%;
-        background: #6F9FE8;
-    }
-
-    .welcome-small {
-        color: #7F8792;
-        font-size: 10px;
-        text-transform: uppercase;
-        letter-spacing: 1.4px;
-        margin-bottom: 9px;
-    }
-
-    .welcome-title {
-        font-family: "DM Serif Display", Georgia, serif;
-        font-size: 30px;
-        color: #F5F7FA;
-        margin-bottom: 9px;
-    }
-
-    .welcome-text {
-        color: #969DA8;
-        font-size: 14px;
-        line-height: 1.7;
-        max-width: 720px;
-    }
-
-    .study-prompt {
-        background: #0F1217;
-        border: 1px solid #252A32;
-        border-radius: 18px;
-        padding: 30px 34px;
-        margin-bottom: 50px;
-    }
-
-    .prompt-label {
-        color: #6F7783;
-        font-size: 10px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1.4px;
-        margin-bottom: 9px;
-    }
-
-    .prompt-title {
-        font-family: "DM Serif Display", Georgia, serif;
-        color: #F1F3F4;
-        font-size: 27px;
-        margin-bottom: 8px;
-    }
-
-    .prompt-text {
-        color: #858C97;
-        font-size: 13px;
-        line-height: 1.7;
-        max-width: 650px;
-    }
-
-    .chat-area {
-        margin-top: 5px;
-    }
-
-    .chat-header {
-        font-family: "DM Serif Display", Georgia, serif;
-        color: #F1F3F4;
-        font-size: 29px;
-        margin-bottom: 5px;
-    }
-
-    .chat-caption {
-        color: #6F7680;
-        font-size: 12px;
-        margin-bottom: 22px;
-    }
-
     .ai-message {
         background: #11141A;
         border: 1px solid #292D35;
@@ -300,23 +204,13 @@ st.markdown(
     div[data-testid="stChatInput"] textarea::placeholder {
         color: #727983 !important;
     }
-
-    .stButton > button {
-        background: #171A20 !important;
-        color: #B8BEC7 !important;
-        border: 1px solid #30343C !important;
-        border-radius: 9px !important;
-        transition: 0.2s ease;
-    }
-
-    .stButton > button:hover {
-        background: #1D222B !important;
-        color: #E8EAED !important;
-        border-color: #4B5665 !important;
-    }
-
-    hr {
-        border-color: #272B33 !important;
+    
+    .chat-subject-badge {
+        color: #8AB4F8;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        letter-spacing: 1px;
     }
 
     .footer {
@@ -334,241 +228,91 @@ st.markdown(
 def show_messages():
     for message in st.session_state.messages:
         if message["role"] == "user":
-            st.markdown(
-                f'<div class="user-message">{message["content"]}</div>',
-                unsafe_allow_html=True,
-            )
+            st.markdown(f'<div class="user-message">{message["content"]}</div>', unsafe_allow_html=True)
         else:
-            st.markdown(
-                f'<div class="ai-message">{message["content"]}</div>',
-                unsafe_allow_html=True,
-            )
+            st.markdown(f'<div class="ai-message">{message["content"]}</div>', unsafe_allow_html=True)
 
 with st.sidebar:
-    st.markdown(
-        '<div class="sidebar-brand">University Tutor</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown('<div class="sidebar-brand">University Tutor</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-description">Your AI-powered university study companion</div>', unsafe_allow_html=True)
 
-    st.markdown(
-        '<div class="sidebar-description">'
-        "Your AI-powered university study companion"
-        "</div>",
-        unsafe_allow_html=True,
-    )
-
-
-    st.markdown(
-        '<div class="sidebar-heading">Current Subject</div>',
-        unsafe_allow_html=True,
-    )
-
-    subject = st.selectbox(
-    "Select Subject for this Chat:",
-    [
-        "BASIC ELECTRONICS 1",
-        "MATHS 1",
-        "PHYSICS 1",
-        "SDF 1"
-    ],
-    key="main_subject_selector",
-    on_change=handle_subject_change
-)
-
-    st.markdown("---")
-    
     st.markdown('<div class="sidebar-heading">Chat History</div>', unsafe_allow_html=True)
     
     if st.button("➕ New Chat", use_container_width=True):
         new_thread_id = f"Chat {len(st.session_state.threads) + 1}"
-        st.session_state.threads[new_thread_id] = [
-            {"role": "assistant", "content": f"New chat started. Ask me anything!"}
-        ]
+        st.session_state.threads[new_thread_id] = {
+            "subject": "PHYSICS 1",
+            "messages": [{"role": "assistant", "content": "New chat started. Select a subject on the right and ask me anything!"}]
+        }
         st.session_state.current_thread = new_thread_id
         st.rerun()
 
-    selected_thread = st.selectbox(
-        "History", 
-        list(st.session_state.threads.keys()), 
-        index=list(st.session_state.threads.keys()).index(st.session_state.current_thread),
-        label_visibility="collapsed"
-    )
-    
-    if selected_thread != st.session_state.current_thread:
-        st.session_state.current_thread = selected_thread
-        st.rerun()
+    # 2. GEMINI-STYLE CHAT LIST: Loops through threads and displays them as buttons
+    for thread_id in reversed(list(st.session_state.threads.keys())):
+        # Add an emoji indicator if it is the currently active chat
+        btn_label = f"💬 {thread_id}" if thread_id == st.session_state.current_thread else thread_id
+        
+        if st.button(btn_label, key=f"btn_{thread_id}", use_container_width=True):
+            st.session_state.current_thread = thread_id
+            st.rerun()
 
     st.markdown("---")
     st.caption("AI University Tutor")
     st.caption("RAG-powered academic assistant")
 
-if st.session_state.page == "subjects":
-    st.markdown(
-        '<div class="hero-label">SUBJECTS</div>',
-        unsafe_allow_html=True,
+
+# 3. DYNAMIC UI TOGGLE: Check if the user has started chatting
+is_chat_started = len(st.session_state.messages) > 1
+
+if not is_chat_started:
+    # Show Hero UI only if no messages have been sent yet
+    st.markdown('<div class="hero-label">CHAT</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-title">Ask anything.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-subtitle">Have a question about your university subjects? Start a conversation with your AI tutor.</div>', unsafe_allow_html=True)
+    
+    subjects_list = ["BASIC ELECTRONICS 1", "MATHS 1", "PHYSICS 1", "SDF 1"]
+    
+    selected_subject = st.selectbox(
+        "Select Subject for this Chat:",
+        subjects_list,
+        index=subjects_list.index(current_chat["subject"]) if current_chat["subject"] in subjects_list else 2,
+        key=f"subject_selector_{st.session_state.current_thread}"
     )
-
-    st.markdown(
-        '<div class="main-title">Your subjects.</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        '<div class="main-subtitle">'
-        "Choose a subject to access its course material "
-        "and ask questions about it."
-        "</div>",
-        unsafe_allow_html=True,
-    )
-
-    subjects = st.selectbox(
-        "Choose a subject",
-        [
-            "BASIC ELECTRONICS 1",
-            "MATHS 1",
-            "PHYSICS 1",
-            "SDF 1",
-        ],
-        key="subject_selector",
-        on_change=handle_subject_change,
-        label_visibility="collapsed",
-    )
-
-
-    for item in subjects:
-        st.markdown(
-            f"""
-            <div class="welcome-card">
-                <div class="welcome-small">SUBJECT</div>
-                <div class="welcome-title">{item}</div>
-                <div class="welcome-text">
-                    Course material and contextual answers
-                    for {item}.
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-elif st.session_state.page == "material":
-    st.markdown(
-        '<div class="hero-label">STUDY MATERIAL</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        '<div class="main-title">Your material.</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        '<div class="main-subtitle">'
-        "Access the university material used by the AI tutor "
-        "to answer your questions."
-        "</div>",
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        """
-        <div class="study-prompt">
-            <div class="prompt-label">COURSE MATERIAL</div>
-            <div class="prompt-title">Material will appear here.</div>
-            <div class="prompt-text">
-                Upload or connect your university documents
-                when the document retrieval system is ready.
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-elif st.session_state.page == "practice":
-    st.markdown(
-        '<div class="hero-label">PRACTICE</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        '<div class="main-title">Practice smarter.</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        '<div class="main-subtitle">'
-        "Test your understanding with questions based "
-        "on your university course material."
-        "</div>",
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        """
-        <div class="study-prompt">
-            <div class="prompt-label">PRACTICE MODE</div>
-            <div class="prompt-title">
-                Practice questions are coming soon.
-            </div>
-            <div class="prompt-text">
-                This section can later generate questions
-                from the selected subject and course material.
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
+    
+    # Lock the selected subject to this specific thread
+    current_chat["subject"] = selected_subject
+    st.markdown("---")
 else:
-    st.markdown(
-        '<div class="hero-label">CHAT</div>',
-        unsafe_allow_html=True,
-    )
+    # If chat has started, hide the dropdown and just show a subtle badge indicating the locked subject
+    st.markdown(f'<div class="chat-subject-badge">DISCUSSING: {current_chat["subject"]}</div>', unsafe_allow_html=True)
 
-    st.markdown(
-        '<div class="main-title">Ask anything.</div>',
-        unsafe_allow_html=True,
-    )
 
-    st.markdown(
-        '<div class="main-subtitle">'
-        "Have a question about your university subjects? "
-        "Start a conversation with your AI tutor."
-        "</div>",
-        unsafe_allow_html=True,
-    )
+show_messages()
 
-    show_messages()
-    
-    question = st.chat_input("Ask a question about your course...", key="unique_chat_input")
-    
-    if question:
-        st.session_state.messages.append(
-            {"role": "user", "content": question}
+# Use a dynamic key so the input box behaves cleanly when switching threads
+question = st.chat_input("Ask a question about your course...", key=f"input_{st.session_state.current_thread}")
+
+if question:
+    st.session_state.messages.append({"role": "user", "content": question})
+
+    backend_url = "http://127.0.0.1:8000/chat"
+
+    try:
+        # Send the subject locked into this specific thread's data
+        api_response = requests.post(
+            backend_url, 
+            json={
+                "question": question, 
+                "subject": current_chat["subject"]
+            }
         )
+        api_response.raise_for_status()
+        response = api_response.json().get("answer", "No answer received.")
+        
+    except requests.exceptions.RequestException as e:
+        response = f"Backend connection error: {e}"
 
-        backend_url = "http://127.0.0.1:8000/chat"
+    st.session_state.messages.append({"role": "assistant", "content": response})
+    st.rerun()
 
-        try:
-            api_response = requests.post(
-                backend_url, 
-                json={
-                    "question": question, 
-                    "subject": subject
-                }
-            )
-            api_response.raise_for_status()
-            response = api_response.json().get("answer", "No answer received.")
-            
-        except requests.exceptions.RequestException as e:
-            response = f"Backend connection error: {e}"
-
-        st.session_state.messages.append(
-            {"role": "assistant", "content": response}
-        )
-
-        st.rerun()
-
-st.markdown(
-    '<div class="footer">AI University Tutor</div>',
-    unsafe_allow_html=True,
-)
+st.markdown('<div class="footer">AI University Tutor</div>', unsafe_allow_html=True)
