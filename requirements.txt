@@ -4,9 +4,5 @@ pydantic
 langchain
 langchain-google-genai
 langchain-pinecone
-<<<<<<< HEAD
-pinecone
-=======
 pinecone
 streamlit
->>>>>>> 3dd9ed4b6ad78280124a602c9b98a64df683cc47
