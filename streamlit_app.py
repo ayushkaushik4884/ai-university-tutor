@@ -1,6 +1,10 @@
 import streamlit as st
 import requests
 
+# =========================================================
+# PAGE CONFIG
+# =========================================================
+
 st.set_page_config(
     page_title="AI University Tutor",
     page_icon="",
